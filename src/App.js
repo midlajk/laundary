@@ -5,6 +5,7 @@ import Customermanagement from './components/customermanagement';
 import Services from './components/services';
 import NewOrder from './components/neworder';
 import Orders from './components/orders';
+import Payments from './components/payments';
 
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
         <Route path="/services" element={<Services />} />
         <Route path="/neworder" element={<NewOrder />} />
         <Route path="/orders" element={<Orders />} />
+        <Route path="/payments" element={<Payments />} />
 
       </Route>
     </Routes>

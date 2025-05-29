@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Minus, Trash2, User, FileText, Printer, Eye, CheckCircle, Clock, DollarSign, Search, Phone } from 'lucide-react';
+import { Plus, Minus, Trash2, User, FileText, Printer, Eye, CheckCircle, Clock, DollarSign, Search, Phone, Truck } from 'lucide-react';
+
+// Mock Dexie database for demo purposes (since we can't import external files in artifacts)
+
 import db from './db';
 
 const OrderManagementSystem = () => {
-  // States
+  // State variables
   const [customers, setCustomers] = useState([]);
   const [services, setServices] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -16,18 +19,97 @@ const OrderManagementSystem = () => {
   const [amountPaid, setAmountPaid] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [deliveryStatus, setDeliveryStatus] = useState('pending');
-  const [status, setStatus] = useState('pending');
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [paymentAmount, setPaymentAmount] = useState(0);
+  const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentNote, setPaymentNote] = useState('');
   const [customerPayments, setCustomerPayments] = useState([]);
 
-  // Calculate totals
+  // Load data from IndexedDB on component mount
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        // Check if we need to seed initial data
+        const custCount = await db.customers.count();
+        const servCount = await db.services.count();
+
+        // Seed customers if empty
+        if (custCount === 0) {
+          await db.customers.bulkAdd([
+            { 
+              customerId: 'CUST001',
+              name: 'Ahmed Al-Rashid', 
+              phoneNumber: '+971501234567', 
+              vehicleNumber: 'DXB-A-12345',
+              address: '123 Sheikh Zayed Road, Dubai' 
+            },
+            { 
+              customerId: 'CUST002',
+              name: 'Fatima Hassan', 
+              phoneNumber: '+971507654321', 
+              vehicleNumber: 'DXB-B-67890',
+              address: '456 Al Wasl Road, Dubai' 
+            },
+            { 
+              customerId: 'CUST003',
+              name: 'Mohammed Al-Farisi', 
+              phoneNumber: '+971509876543', 
+              vehicleNumber: 'DXB-C-11111',
+              address: '789 Jumeirah Beach Road, Dubai' 
+            }
+          ]);
+        }
+
+        // Seed services if empty
+        if (servCount === 0) {
+          await db.services.bulkAdd([
+            { name: 'Wash & Fold', price: 15.00, category: 'Basic', description: 'Standard wash and fold service', duration: 24, active: true },
+            { name: 'Dry Cleaning', price: 25.00, category: 'Premium', description: 'Professional dry cleaning', duration: 48, active: true },
+            { name: 'Express Wash', price: 20.00, category: 'Express', description: 'Quick wash service', duration: 12, active: true },
+            { name: 'Ironing Service', price: 12.00, category: 'Basic', description: 'Professional ironing', duration: 24, active: true },
+            { name: 'Stain Removal', price: 30.00, category: 'Specialty', description: 'Specialized stain treatment', duration: 72, active: true }
+          ]);
+        }
+
+        // Load all data into state
+        const [allCustomers, allServices, allOrders] = await Promise.all([
+          db.customers.toArray(),
+          db.services.toArray(),
+          db.orders.toArray()
+        ]);
+
+        // For orders, we need to get their items and customer details
+        const ordersWithDetails = await Promise.all(allOrders.map(async order => {
+          const [customer, items] = await Promise.all([
+            db.customers.get(order.customerId),
+            db.orderItems.where('orderId').equals(order.id).toArray()
+          ]);
+
+          const itemsWithServices = await Promise.all(items.map(async item => {
+            const service = await db.services.get ? await db.services.get(item.serviceId) : 
+              allServices.find(s => s.id === item.serviceId);
+            return { ...item, service };
+          }));
+
+          return { ...order, customer, items: itemsWithServices };
+        }));
+
+        setCustomers(allCustomers);
+        setServices(allServices);
+        setOrders(ordersWithDetails);
+      } catch (error) {
+        console.error('Error loading initial data:', error);
+      }
+    };
+
+    loadInitialData();
+  }, []);
+
+  // Calculations
   const subtotal = orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const vatAmount = subtotal * 0.05;
   const total = subtotal + vatAmount;
 
-  // Filter customers and services
+  // Filtered data
   const filteredCustomers = customers.filter(customer =>
     customer.name.toLowerCase().includes(searchCustomer.toLowerCase()) ||
     customer.customerId.toLowerCase().includes(searchCustomer.toLowerCase()) ||
@@ -39,41 +121,7 @@ const OrderManagementSystem = () => {
     service.category.toLowerCase().includes(searchService.toLowerCase())
   );
 
-  // Load initial data
-  useEffect(() => {
-    const loadData = async () => {
-      const [customers, services, orders, payments] = await Promise.all([
-        db.customers.toArray(),
-        db.services.toArray(),
-        db.orders.toArray(),
-        db.payments.toArray()
-      ]);
-      
-      // Get order details
-      const ordersWithDetails = await Promise.all(orders.map(async order => {
-        const [customer, items] = await Promise.all([
-          db.customers.get(order.customerId),
-          db.orderItems.where('orderId').equals(order.id).toArray()
-        ]);
-
-        const itemsWithServices = await Promise.all(items.map(async item => {
-          const service = await db.services.get(item.serviceId);
-          return { ...item, service };
-        }));
-
-        return { ...order, customer, items: itemsWithServices };
-      }));
-
-      setCustomers(customers);
-      setServices(services);
-      setOrders(ordersWithDetails);
-      setCustomerPayments(payments);
-    };
-
-    loadData();
-  }, []);
-
-  // Service functions
+  // Helper functions
   const addService = (service) => {
     const existingItem = orderItems.find(item => item.serviceId === service.id);
     if (existingItem) {
@@ -117,70 +165,6 @@ const OrderManagementSystem = () => {
     return `ORD-${String(orders.length + 1).padStart(3, '0')}`;
   };
 
-  // Create order function with Dexie
-  const createOrder = async () => {
-    if (!selectedCustomer || orderItems.length === 0) {
-      alert('Please select a customer and add at least one service');
-      return;
-    }
-
-    const customer = customers.find(c => c.id === parseInt(selectedCustomer));
-    const paymentStatus = amountPaid >= total ? 'paid' : amountPaid > 0 ? 'partial' : 'pending';
-    
-    try {
-      // Create order
-      const orderId = await db.orders.add({
-        orderNumber: generateOrderNumber(),
-        customerId: customer.id,
-        subtotal,
-        vatAmount,
-        total,
-        amountPaid: parseFloat(amountPaid) || 0,
-        paymentMethod,
-        paymentStatus,
-        status,
-        deliveryStatus,
-        createdAt: new Date().toISOString()
-      });
-
-      // Add order items
-      await Promise.all(orderItems.map(item => 
-        db.orderItems.add({
-          orderId,
-          serviceId: item.serviceId,
-          quantity: item.quantity,
-          price: item.price
-        })
-      ));
-
-      // Update state
-      const newOrder = {
-        id: orderId,
-        orderNumber: generateOrderNumber(),
-        customerId: customer.id,
-        customer,
-        items: [...orderItems],
-        subtotal,
-        vatAmount,
-        total,
-        amountPaid: parseFloat(amountPaid) || 0,
-        paymentMethod,
-        paymentStatus,
-        status,
-        deliveryStatus,
-        createdAt: new Date().toISOString()
-      };
-
-      setOrders([...orders, newOrder]);
-      setCurrentOrderId(orderId);
-      setShowBill(true);
-    } catch (error) {
-      console.error('Error creating order:', error);
-      alert('Failed to create order');
-    }
-  };
-
-  // Status badge functions
   const getStatusBadge = (status) => {
     const config = {
       pending: 'bg-yellow-100 text-yellow-800',
@@ -191,7 +175,8 @@ const OrderManagementSystem = () => {
     
     return (
       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config[status] || config.pending}`}>
-        {status === 'in_progress' ? 'IN PROGRESS' : status.toUpperCase()}
+        <Clock className="w-3 h-3 mr-1" />
+        {status.replace('_', ' ').toUpperCase()}
       </span>
     );
   };
@@ -205,7 +190,8 @@ const OrderManagementSystem = () => {
     
     return (
       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config[status] || config.pending}`}>
-        {status === 'in_progress' ? 'IN PROGRESS' : status.toUpperCase()}
+        <Truck className="w-3 h-3 mr-1" />
+        {status.replace('_', ' ').toUpperCase()}
       </span>
     );
   };
@@ -225,71 +211,134 @@ const OrderManagementSystem = () => {
     );
   };
 
-  // Reset order
-  const resetOrder = () => {
-    setSelectedCustomer('');
-    setOrderItems([]);
-    setShowBill(false);
-    setCurrentOrderId(null);
-    setAmountPaid(0);
-    setStatus('pending');
-    setDeliveryStatus('pending');
-  };
+  // Modified createOrder to use Dexie
+  const createOrder = async () => {
+    if (!selectedCustomer || orderItems.length === 0) {
+      alert('Please select a customer and add at least one service');
+      return;
+    }
 
-  // Print bill
-  const printBill = () => {
-    window.print();
-  };
-
-  // Handle payment
-  const handleAddPayment = async () => {
-    if (!currentOrderId || !paymentAmount) return;
+    const customer = customers.find(c => c.id === parseInt(selectedCustomer));
+    const paymentStatus = amountPaid >= total ? 'paid' : amountPaid > 0 ? 'partial' : 'pending';
     
     try {
-      const order = orders.find(o => o.id === currentOrderId);
-      const payment = {
-        customerId: order.customerId,
+      // Create the order in the database
+      const orderId = await db.orders.add({
+        customerId: customer.id,
+        date: new Date().toISOString(),
+        status: 'pending',
+        totalAmount: total
+      });
+
+      // Add all order items
+      await Promise.all(orderItems.map(item => 
+        db.orderItems.add({
+          orderId,
+          serviceId: item.serviceId,
+          quantity: item.quantity,
+          price: item.price
+        })
+      ));
+
+      // Add payment if amount paid > 0
+      if (amountPaid > 0) {
+        await db.payments.add({
+          customerId: customer.id,
+          orderId,
+          amount: parseFloat(amountPaid),
+          paymentMethod,
+          date: new Date().toISOString()
+        });
+      }
+
+      // Get the complete order with details for state
+      const newOrder = {
+        id: orderId,
+        orderNumber: generateOrderNumber(),
+        customerId: customer.id,
+        customer,
+        items: [...orderItems],
+        subtotal,
+        vatAmount,
+        total,
+        amountPaid: parseFloat(amountPaid) || 0,
+        paymentMethod,
+        paymentStatus,
+        status: 'pending',
+        deliveryStatus,
+        date: new Date().toISOString()
+      };
+
+      // Update state
+      setOrders([...orders, newOrder]);
+      setCurrentOrderId(orderId);
+      setShowBill(true);
+    } catch (error) {
+      console.error('Error creating order:', error);
+      alert('Failed to create order');
+    }
+  };
+
+  const handleAddPayment = async () => {
+    if (!paymentAmount || parseFloat(paymentAmount) <= 0) {
+      alert('Please enter a valid payment amount');
+      return;
+    }
+
+    const currentOrder = orders.find(order => order.id === currentOrderId);
+    if (!currentOrder) return;
+
+    try {
+      // Add payment to database
+      await db.payments.add({
+        customerId: currentOrder.customerId,
         orderId: currentOrderId,
         amount: parseFloat(paymentAmount),
-        method: paymentMethod,
-        date: new Date().toISOString(),
-        note: paymentNote
-      };
-      
-      // Add payment to database
-      await db.payments.add(payment);
-      
-      // Update order payment status
-      const newAmountPaid = order.amountPaid + payment.amount;
-      const newPaymentStatus = newAmountPaid >= order.total ? 'paid' : 'partial';
-      
-      await db.orders.update(currentOrderId, {
-        amountPaid: newAmountPaid,
-        paymentStatus: newPaymentStatus
+        paymentMethod,
+        date: new Date().toISOString()
       });
-      
-      // Update state
-      setCustomerPayments([...customerPayments, payment]);
-      setOrders(orders.map(o => 
-        o.id === currentOrderId 
-          ? { ...o, amountPaid: newAmountPaid, paymentStatus: newPaymentStatus } 
-          : o
+
+      // Update order payment status
+      const newAmountPaid = currentOrder.amountPaid + parseFloat(paymentAmount);
+      const newPaymentStatus = newAmountPaid >= currentOrder.total ? 'paid' : 'partial';
+
+      // Update orders state
+      setOrders(orders.map(order =>
+        order.id === currentOrderId
+          ? { ...order, amountPaid: newAmountPaid, paymentStatus: newPaymentStatus }
+          : order
       ));
-      
-      setShowPaymentModal(false);
-      setPaymentAmount(0);
+
+      // Reset payment modal
+      setPaymentAmount('');
       setPaymentNote('');
+      setShowPaymentModal(false);
+
+      alert('Payment added successfully!');
     } catch (error) {
       console.error('Error adding payment:', error);
       alert('Failed to add payment');
     }
   };
 
-  // Get current data
+  const resetOrder = () => {
+    setSelectedCustomer('');
+    setOrderItems([]);
+    setShowBill(false);
+    setCurrentOrderId(null);
+    setAmountPaid(0);
+    setDeliveryStatus('pending');
+  };
+
+  const printBill = () => {
+    window.print();
+  };
+
   const currentOrder = orders.find(order => order.id === currentOrderId);
   const currentCustomer = currentOrder ? customers.find(c => c.id === currentOrder.customerId) : null;
-  const customerOrderHistory = currentCustomer ? orders.filter(o => o.customerId === currentOrder.customerId) : [];
+  const customerOrderHistory = currentCustomer ? orders.filter(o => o.customerId === currentCustomer.id) : [];
   const customerPaymentHistory = currentCustomer ? customerPayments.filter(p => p.customerId === currentCustomer.id) : [];
+
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="">
@@ -575,9 +624,6 @@ const OrderManagementSystem = () => {
             </div>
 
             {/* Order History */}
-
-
-            {orderItems.length  <= 0 ? (
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Orders</h2>
               
@@ -591,7 +637,7 @@ const OrderManagementSystem = () => {
                             {order.customer?.name || 'Unknown Customer'}
                           </p>
                           <p className="text-sm text-gray-600">
-                            {new Date(order.createdAt).toLocaleDateString()}
+                            {new Date(order.date).toLocaleDateString()}
                           </p>
                         </div>
                         <div className="text-right">
@@ -613,9 +659,6 @@ const OrderManagementSystem = () => {
                 <p className="text-gray-500 text-center py-8">No orders yet</p>
               )}
             </div>
-            ):(
-              <div></div>
-            )}
           </div>
         </div>
 

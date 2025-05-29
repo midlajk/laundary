@@ -1,37 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, DollarSign, Clock, Shirt, Search } from 'lucide-react';
+import db from './db'; // Import your Dexie database instance
 
 const ServiceManagement = () => {
-  const [services, setServices] = useState([
-    {
-      id: 1,
-      name: 'Wash & Fold',
-      price: 2.50,
-      duration: 60,
-      description: 'Basic wash and fold service',
-      category: 'Basic',
-      active: true
-    },
-    {
-      id: 2,
-      name: 'Dry Cleaning',
-      price: 8.99,
-      duration: 120,
-      description: 'Professional dry cleaning service',
-      category: 'Premium',
-      active: true
-    },
-    {
-      id: 3,
-      name: 'Express Wash',
-      price: 4.99,
-      duration: 30,
-      description: 'Quick wash service',
-      category: 'Express',
-      active: true
-    }
-  ]);
-
+  const [services, setServices] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingService, setEditingService] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -45,6 +17,20 @@ const ServiceManagement = () => {
   });
 
   const categories = ['Basic', 'Premium', 'Express', 'Specialty'];
+
+  // Load services from IndexedDB
+  useEffect(() => {
+    const loadServices = async () => {
+      try {
+        const allServices = await db.services.toArray();
+        setServices(allServices);
+      } catch (error) {
+        console.error('Error loading services:', error);
+      }
+    };
+    
+    loadServices();
+  }, []);
 
   // Filter services based on search term
   const filteredServices = services.filter(service =>
@@ -80,40 +66,56 @@ const ServiceManagement = () => {
     resetForm();
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (editingService) {
-      // Update existing service
-      setServices(services.map(service =>
-        service.id === editingService.id
-          ? { ...formData, id: editingService.id, price: parseFloat(formData.price), duration: parseInt(formData.duration) }
-          : service
-      ));
-    } else {
-      // Add new service
-      const newService = {
-        ...formData,
-        id: Date.now(),
-        price: parseFloat(formData.price),
-        duration: parseInt(formData.duration)
-      };
-      setServices([...services, newService]);
+    try {
+      if (editingService) {
+        // Update existing service in IndexedDB
+        await db.services.update(editingService.id, {
+          ...formData,
+          price: parseFloat(formData.price),
+          duration: parseInt(formData.duration)
+        });
+      } else {
+        // Add new service to IndexedDB
+        await db.services.add({
+          ...formData,
+          price: parseFloat(formData.price),
+          duration: parseInt(formData.duration)
+        });
+      }
+      
+      // Refresh the services list
+      const updatedServices = await db.services.toArray();
+      setServices(updatedServices);
+      closeModal();
+    } catch (error) {
+      console.error('Error saving service:', error);
     }
-    
-    closeModal();
   };
 
-  const deleteService = (id) => {
+  const deleteService = async (id) => {
     if (window.confirm('Are you sure you want to delete this service?')) {
-      setServices(services.filter(service => service.id !== id));
+      try {
+        await db.services.delete(id);
+        const updatedServices = await db.services.toArray();
+        setServices(updatedServices);
+      } catch (error) {
+        console.error('Error deleting service:', error);
+      }
     }
   };
 
-  const toggleServiceStatus = (id) => {
-    setServices(services.map(service =>
-      service.id === id ? { ...service, active: !service.active } : service
-    ));
+  const toggleServiceStatus = async (id) => {
+    try {
+      const service = await db.services.get(id);
+      await db.services.update(id, { active: !service.active });
+      const updatedServices = await db.services.toArray();
+      setServices(updatedServices);
+    } catch (error) {
+      console.error('Error toggling service status:', error);
+    }
   };
 
   const getCategoryColor = (category) => {
@@ -128,7 +130,7 @@ const ServiceManagement = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-6xl mx-auto">
+      <div className="">
         {/* Header */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
