@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>LaundryPro - Loading</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1976d2',
+                        secondary: '#0d47a1',
+                        accent: '#4CAF50',
+                        danger: '#ff4444',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .progress-bar-transition {
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center text-gray-800">
+    <div class="w-full max-w-3xl mx-4 bg-white rounded-xl shadow-xl overflow-hidden border border-gray-200">
+        <div class="p-10 text-center">
+            <h1 class="text-4xl font-bold mb-3 text-primary">LaundryPro</h1>
+            <p class="text-gray-600 mb-8 text-lg">Professional Laundry Management System</p>
+            
+            <div class="w-full bg-gray-200 rounded-full h-3 mb-8">
+                <div id="progressBar" class="bg-accent h-3 rounded-full progress-bar-transition" style="width: 0%"></div>
+            </div>
+            
+            <p id="statusMessage" class="text-base font-medium mb-10">Initializing application...</p>
+            
+            <!-- License Key Form (hidden by default) -->
+            <div id="keyInputContainer" class="hidden text-left bg-gray-50 p-8 rounded-lg border border-gray-200">
+                <h3 class="text-xl font-semibold mb-6 text-center text-primary">Business Registration</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium mb-2 text-gray-700">Company Name*</label>
+                        <input type="text" id="companyName" class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2 text-gray-700">Contact Person*</label>
+                        <input type="text" id="contactPerson" class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2 text-gray-700">Phone Number*</label>
+                        <input type="tel" id="phoneNumber" class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent" placeholder="+971 50 123 4567" required>
+                    </div>
+                    
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium mb-2 text-gray-700">Business Address*</label>
+                        <textarea id="companyAddress" rows="3" class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent" required></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2 text-gray-700">TRN (Tax Registration Number)</label>
+                        <input type="text" id="companyTRN" class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent" placeholder="123456789012345">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2 text-gray-700">License Key*</label>
+                        <input type="text" id="licenseKey" class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent" placeholder="XXXX-XXXX-XXXX-XXXX" required>
+                    </div>
+                </div>
+                
+                <div class="mt-8">
+                    <button id="submitKey" class="w-full bg-accent hover:bg-green-600 text-white font-medium py-3 px-6 rounded-lg transition duration-200 text-lg">
+                        Activate License
+                    </button>
+                </div>
+                
+                <p id="keyError" class="text-danger text-sm mt-4 text-center hidden"></p>
+                
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <h4 class="text-sm font-medium text-gray-600 mb-3">For support in UAE, contact:</h4>
+                    <div class="flex flex-col sm:flex-row justify-center gap-4 text-sm text-gray-600">
+                        <p><span class="font-medium">Phone:</span> +971 505226253</p>
+                        <p><span class="font-medium">Email:</span> support@iconia.ae</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="splashRenderer.js"></script>
+</body>
+</html>

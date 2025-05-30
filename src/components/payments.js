@@ -321,9 +321,19 @@ const PaymentManagementPage = () => {
   };
 
   // Handle print receipt
-  const handlePrintReceipt = () => {
+  const handlePrintReceipt = async (receiptData) => {
     // Implement print functionality here
-    window.print();
+ try {
+        const success = await window.electronAPI.printPaymentReceipt(receiptData);
+        if (success) {
+            alert('Receipt printed successfully!');
+        } else {
+            alert('Failed to print receipt');
+        }
+    } catch (error) {
+        console.error('Printing error:', error);
+        alert('Error while printing receipt');
+    }
   };
 
   // Prepare receipt for printing from table
@@ -827,7 +837,7 @@ const PaymentManagementPage = () => {
                   Close
                 </button>
                 <button
-                  onClick={handlePrintReceipt}
+                  onClick={()=>handlePrintReceipt(receiptData)}
                   className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 rounded-xl text-white font-medium"
                 >
                   Print Receipt

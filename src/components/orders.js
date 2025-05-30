@@ -133,14 +133,30 @@ const OrdersManagementScreen = () => {
   };
 
   // Print invoice
-  const printInvoice = (order) => {
-    setSelectedOrder(order);
-    setShowInvoice(true);
-    setTimeout(() => {
-      window.print();
-    }, 100);
-  };
+  // const printInvoice = (order) => {
+  //   setSelectedOrder(order);
+  //   setShowInvoice(true);
+  //   setTimeout(() => {
+  //     window.print();
+  //   }, 100);
+  // };
 
+
+  async function printInvoice(order) {
+        setSelectedOrder(order);
+    setShowInvoice(true);
+    try {
+        const success = await window.electronAPI.printTextReceipt(order);
+        if (success) {
+            alert('Receipt printed successfully!');
+        } else {
+            alert('Failed to print receipt');
+        }
+    } catch (error) {
+        console.error('Printing error:', error);
+        alert('Error while printing receipt');
+    }
+}
   // Get status badge
   const getStatusBadge = (status) => {
     const statusConfig = {

@@ -237,9 +237,19 @@ const OrderManagementSystem = () => {
   };
 
   // Print bill
-  const printBill = () => {
-    window.print();
-  };
+async function handlePrint(order) {
+    try {
+        const success = await window.electronAPI.printTextReceipt(order);
+        if (success) {
+            alert('Receipt printed successfully!');
+        } else {
+            alert('Failed to print receipt');
+        }
+    } catch (error) {
+        console.error('Printing error:', error);
+        alert('Error while printing receipt');
+    }
+}
 
   // Handle payment
   const handleAddPayment = async () => {
@@ -631,7 +641,7 @@ const OrderManagementSystem = () => {
                   <h2 className="text-2xl font-bold text-gray-900">Invoice</h2>
                   <div className="flex gap-2 print:hidden">
                     <button
-                      onClick={printBill}
+                      onClick={()=>handlePrint(currentOrder)}
                       className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
                     >
                       <Printer size={20} />

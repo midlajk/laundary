@@ -2,7 +2,8 @@
   "name": "laundry",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://midlajk.github.io/laundary",
+  "homepage": "./",
+  "main": "public/electron.js",
   "dependencies": {
     "@heroicons/react": "^2.2.0",
     "@mui/icons-material": "^7.1.0",
@@ -14,7 +15,11 @@
     "date-fns": "^4.1.0",
     "dexie": "^4.0.11",
     "dexie-react-hooks": "^1.1.7",
+    "electron-store": "^10.0.1",
+    "firebase": "^11.8.1",
     "lucide-react": "^0.511.0",
+    "node-machine-id": "^1.1.12",
+    "node-thermal-printer": "^4.5.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.1",
@@ -28,7 +33,9 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "deploy": "gh-pages -d build",
+    "electron": "npm run build && electron .",
+    "dist": "npm run build && electron-builder"
   },
   "eslintConfig": {
     "extends": [
@@ -49,6 +56,25 @@
     ]
   },
   "devDependencies": {
+    "electron": "^36.3.2",
+    "electron-builder": "^26.0.12",
     "gh-pages": "^6.3.0"
+  },
+  "build": {
+  "appId": "com.yourapp.laundry",
+  "productName": "LaundryApp",
+  "files": [
+    "build/**/*",
+    "public/electron.js",
+    "public/preload.js"
+  ],
+  "directories": {
+    "buildResources": "assets"
+  },
+  "win": {
+    "target": "nsis"
   }
+
+}
+
 }
