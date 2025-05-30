@@ -243,13 +243,15 @@ const OrderManagementSystem = () => {
 
   // Handle payment
   const handleAddPayment = async () => {
-    if (!currentOrderId || !paymentAmount) return;
-    
+    if (!paymentAmount) return;
+          const paymentId = `PAY-${Date.now()}`;
+
     try {
       const order = orders.find(o => o.id === currentOrderId);
       const payment = {
         customerId: order.customerId,
         orderId: currentOrderId,
+        paymentId,
         amount: parseFloat(paymentAmount),
         method: paymentMethod,
         date: new Date().toISOString(),
@@ -288,8 +290,8 @@ const OrderManagementSystem = () => {
   // Get current data
   const currentOrder = orders.find(order => order.id === currentOrderId);
   const currentCustomer = currentOrder ? customers.find(c => c.id === currentOrder.customerId) : null;
-  const customerOrderHistory = currentCustomer ? orders.filter(o => o.customerId === currentOrder.customerId) : [];
-  const customerPaymentHistory = currentCustomer ? customerPayments.filter(p => p.customerId === currentCustomer.id) : [];
+  // const customerOrderHistory = currentCustomer ? orders.filter(o => o.customerId === currentOrder.customerId) : [];
+  // const customerPaymentHistory = currentCustomer ? customerPayments.filter(p => p.customerId === currentCustomer.id) : [];
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="">
@@ -504,7 +506,7 @@ const OrderManagementSystem = () => {
 
                   {/* Payment and Delivery Options */}
                   <div className="border-t pt-4 space-y-3">
-                    <div className="grid grid-cols-2 gap-3">
+                    {/* <div className="grid grid-cols-2 gap-3">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Amount Paid (AED)</label>
                         <input
@@ -529,12 +531,12 @@ const OrderManagementSystem = () => {
                           <option value="bank_transfer">Bank Transfer</option>
                         </select>
                       </div>
-                    </div>
+                    </div> */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Status</label>
                       <select
                         value={deliveryStatus}
-                        onChange={(e) => setDeliveryStatus(e.target.value)}
+                        onChange={(e) => setStatus(e.target.value)}
                         className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
                       >
                         <option value="pending">Pending</option>
@@ -559,14 +561,14 @@ const OrderManagementSystem = () => {
                       <span>AED {total.toFixed(2)}</span>
                     </div>
                   
-                    <div className="flex justify-between text-gray-600">
+                    {/* <div className="flex justify-between text-gray-600">
                       <span>Amount Paid:</span>
                       <span>AED {(parseFloat(amountPaid) || 0).toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-red-600 font-medium">
                       <span>Balance Due:</span>
                       <span>AED {(total - (parseFloat(amountPaid) || 0)).toFixed(2)}</span>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               ) : (
@@ -602,10 +604,10 @@ const OrderManagementSystem = () => {
                         </div>
                       </div>
                       
-                      <div className="flex gap-2 text-xs">
+                      {/* <div className="flex gap-2 text-xs">
                         {getPaymentStatusBadge(order.paymentStatus || 'pending')}
                         {getDeliveryStatusBadge(order.deliveryStatus || 'pending')}
-                      </div>
+                      </div> */}
                     </div>
                   ))}
                 </div>
@@ -678,11 +680,11 @@ const OrderManagementSystem = () => {
                       <p className="text-sm text-gray-600">Invoice #</p>
                       <p className="font-bold text-lg">INV-{String(currentOrder.id).padStart(4, '0')}</p>
                       <p className="text-sm text-gray-600 mt-2">Date</p>
-                      <p className="font-medium">{new Date(currentOrder.date).toLocaleDateString()}</p>
+                      <p className="font-medium">{new Date(currentOrder.createdAt).toLocaleDateString()}</p>
                       <div className="mt-3 space-y-1">
                         {getStatusBadge(currentOrder.status)}
-                        {getPaymentStatusBadge(currentOrder.paymentStatus || 'pending')}
-                        {getDeliveryStatusBadge(currentOrder.deliveryStatus || 'pending')}
+                        {/* {getPaymentStatusBadge(currentOrder.paymentStatus || 'pending')}
+                        {getDeliveryStatusBadge(currentOrder.deliveryStatus || 'pending')} */}
                       </div>
                     </div>
                   </div>
@@ -735,22 +737,22 @@ const OrderManagementSystem = () => {
                         <span>Total:</span>
                         <span>AED {currentOrder.total.toFixed(2)}</span>
                       </div>
-                      <div className="flex justify-between text-green-600">
+                      {/* <div className="flex justify-between text-green-600">
                         <span>Amount Paid:</span>
                         <span>AED {currentOrder.amountPaid.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between text-red-600 font-medium">
                         <span>Balance Due:</span>
                         <span>AED {(currentOrder.total - currentOrder.amountPaid).toFixed(2)}</span>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
                 </div>
 
                 {/* Payment Method */}
-                <div className="mb-6 text-sm text-gray-600">
+                {/* <div className="mb-6 text-sm text-gray-600">
                   <p><strong>Payment Method:</strong> {currentOrder.paymentMethod?.toUpperCase() || 'N/A'}</p>
-                </div>
+                </div> */}
 
                 {/* Footer */}
                 <div className="border-t pt-4 text-center text-sm text-gray-500">

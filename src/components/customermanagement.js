@@ -39,19 +39,21 @@ const CustomerManagementScreen = () => {
     if (!orders || !payments) return { pendingOrders: 0, pendingAmount: 0 };
     
     const customerOrders = orders.filter(order => order.customerId === customerId);
+        const customerpayments = payments.filter(payment => payment.customerId === customerId);
     const pendingOrders = customerOrders.filter(order => 
       order.status !== 'delivered' && order.status !== 'cancelled'
     ).length;
     
-    const pendingAmount = customerOrders.reduce((sum, order) => {
+    const ordersum = customerOrders.reduce((sum, order) => {
       if (order.status === 'cancelled') return sum;
-      
-      const orderPayments = payments?.filter(p => p.orderId === order.id) || [];
-      const paidAmount = orderPayments.reduce((paid, p) => paid + p.amount, 0);
-      return sum + (order.totalAmount - paidAmount);
+            return sum + (order.total );
     }, 0);
-    
-    return { pendingOrders, pendingAmount };
+    const paymentmade = customerpayments.reduce((sum, payment) => {
+            return sum + (payment.amount );
+    }, 0);
+
+    let  pendingAmount = ordersum-paymentmade
+    return { pendingOrders, pendingAmount};
   };
 
   // Calculate overall statistics
@@ -237,11 +239,11 @@ const CustomerManagementScreen = () => {
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {stats.pendingAmount > 0 ? (
+                      {stats.pendingAmount !=0 ? (
                         <div className="flex items-center">
                           <CurrencyDollarIcon className="h-4 w-4 text-red-500 mr-1" />
                           <span className="text-sm font-medium text-red-600">
-                            ${stats.pendingAmount.toFixed(2)}
+                            {stats.pendingAmount.toFixed(2)}
                           </span>
                         </div>
                       ) : (

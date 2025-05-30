@@ -58,11 +58,11 @@ const PaymentManagementPage = () => {
         
         // Apply search filter
         if (searchQuery) {
+          console.log(searchQuery)
           const query = searchQuery.toLowerCase();
           filteredPayments = filteredPayments.filter(payment => 
-            payment.note?.toLowerCase().includes(query) ||
-            payment.method?.toLowerCase().includes(query) ||
-            payment.id?.toString().includes(query) ||
+          
+            payment.customerId?.toString().includes(query) ||
             payment.paymentId?.toString().toLowerCase().includes(query) ||
             payment.name?.toLowerCase().includes(query) ||
             payment.phoneNumber?.toLowerCase().includes(query)
@@ -119,6 +119,8 @@ const PaymentManagementPage = () => {
     if (customerSearchQuery) {
       const query = customerSearchQuery.toLowerCase();
       const filtered = allCustomers.filter(customer => 
+                customer.customerId?.toLowerCase().includes(query) ||
+
         customer.name?.toLowerCase().includes(query) ||
         customer.phoneNumber?.includes(query) ||
         customer.vehicleNumber?.toLowerCase().includes(query)
@@ -178,7 +180,7 @@ const PaymentManagementPage = () => {
     setSelectedCustomer(customer);
     setNewPayment(prev => ({
       ...prev,
-      customerId: customer.id,
+      customerId: customer.customerId,
       name: customer.name,
       phoneNumber: customer.phoneNumber
     }));
@@ -276,9 +278,8 @@ const PaymentManagementPage = () => {
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         filteredPayments = filteredPayments.filter(payment => 
-          payment.note?.toLowerCase().includes(query) ||
-          payment.method?.toLowerCase().includes(query) ||
-          payment.id?.toString().includes(query) ||
+      
+          payment.customerId?.toString().includes(query) ||
           payment.paymentId?.toString().toLowerCase().includes(query) ||
           payment.name?.toLowerCase().includes(query) ||
           payment.phoneNumber?.toLowerCase().includes(query)
@@ -475,7 +476,7 @@ const PaymentManagementPage = () => {
                           <div className="text-sm font-semibold text-blue-800">
                             {payment.paymentId || `PAY-${payment.id}`}
                           </div>
-                          <div className="text-sm font-medium">{payment.customerName}</div>
+                          <div className="text-sm font-medium">{payment.customerName} - {payment.customerId} </div>
                           {payment.customerPhone && (
                             <div className="text-xs text-gray-500">{payment.customerPhone}</div>
                           )}
