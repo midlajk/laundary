@@ -654,13 +654,13 @@ const OrderManagementSystem = () => {
                 </div>
 
                 {/* Company Info */}
-                <div className="mb-6 border-b pb-4">
+                {/* <div className="mb-6 border-b pb-4">
                   <h1 className="text-2xl font-bold text-blue-600">LaundryPro Services</h1>
                   <p className="text-gray-600">Professional Laundry & Dry Cleaning</p>
                   <p className="text-sm text-gray-500 mt-1">
                     Dubai, UAE | TRN: 123456789012345 | Tel: +971-4-1234567
                   </p>
-                </div>
+                </div> */}
 
                 {/* Invoice Details */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -755,10 +755,10 @@ const OrderManagementSystem = () => {
                 </div> */}
 
                 {/* Footer */}
-                <div className="border-t pt-4 text-center text-sm text-gray-500">
+                {/* <div className="border-t pt-4 text-center text-sm text-gray-500">
                   <p>Thank you for choosing LaundryPro Services!</p>
                   <p>This is a computer-generated invoice and does not require a signature.</p>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>

@@ -148,6 +148,8 @@ const OrdersManagementScreen = () => {
       in_progress: { color: 'bg-blue-100 text-blue-800', icon: Clock },
       ready: { color: 'bg-green-100 text-green-800', icon: CheckCircle },
       completed: { color: 'bg-gray-100 text-gray-800', icon: CheckCircle },
+            delivered: { color: 'bg-green-100 text-green-800', icon: CheckCircle },
+
       cancelled: { color: 'bg-red-100 text-red-800', icon: Trash2 }
     };
     
@@ -195,28 +197,34 @@ const OrdersManagementScreen = () => {
   };
 
   // Calculate dashboard metrics
-  const calculateMetrics = () => {
-    const metrics = {
-      totalOrders: 0,
-      totalSubtotal: 0,
-      totalVat: 0,
-      totalSales: 0,
-      pendingDelivery: 0
-    };
-
-    filteredOrders.forEach(order => {
-      metrics.totalOrders++;
-      metrics.totalSubtotal += order.subtotal;
-      metrics.totalVat += order.vatAmount;
-      metrics.totalSales += order.total;
-      
-      if (order.status !== 'completed') {
-        metrics.pendingDelivery++;
-      }
-    });
-
-    return metrics;
+const calculateMetrics = () => {
+  const metrics = {
+    totalOrders: 0,
+    totalSubtotal: 0,
+    totalVat: 0,
+    totalSales: 0,
+    pendingDelivery: 0
   };
+
+  filteredOrders.forEach(order => {
+    const status = order.status?.toLowerCase?.();
+
+    // Skip cancelled orders entirely
+    if (status === 'cancelled') return;
+
+    metrics.totalOrders++;
+    metrics.totalSubtotal += order.subtotal || 0;
+    metrics.totalVat += order.vatAmount || 0;
+    metrics.totalSales += order.total || 0;
+
+    if (!['completed', 'delivered'].includes(status)) {
+      metrics.pendingDelivery++;
+    }
+  });
+
+  return metrics;
+};
+
 
   const metrics = calculateMetrics();
 
@@ -288,6 +296,7 @@ const OrdersManagementScreen = () => {
                 <option value="in_progress">In Progress</option>
                 <option value="ready">Ready</option>
                 <option value="completed">Completed</option>
+                <option value="delivered">Delivered</option>
                 <option value="cancelled">Cancelled</option>
               </select>
             </div>
@@ -426,6 +435,7 @@ const OrdersManagementScreen = () => {
                         <option value="in_progress">In Progress</option>
                         <option value="ready">Ready</option>
                         <option value="completed">Completed</option>
+                                        <option value="delivered">Delivered</option>
                         <option value="cancelled">Cancelled</option>
                       </select>
                       <div className="mt-1">
@@ -563,7 +573,7 @@ const OrdersManagementScreen = () => {
             <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
               <div className="p-8">
                 {/* Invoice Header */}
-                <div className="text-center mb-8 border-b pb-6">
+                {/* <div className="text-center mb-8 border-b pb-6">
                   <h1 className="text-3xl font-bold text-gray-900">SERVICE INVOICE</h1>
                   <p className="text-gray-600 mt-2">UAE VAT Registered Business</p>
                   <p className="text-sm text-gray-500">TRN: 123456789012345</p>
@@ -572,7 +582,7 @@ const OrdersManagementScreen = () => {
                     <p>Dubai, United Arab Emirates</p>
                     <p>Tel: +971 4 123 4567 | Email: info@allaundry.ae</p>
                   </div>
-                </div>
+                </div> */}
 
                 {/* Order Details */}
                 <div className="grid grid-cols-2 gap-8 mb-8">
@@ -661,13 +671,13 @@ const OrdersManagementScreen = () => {
                 )}
 
                 {/* Footer */}
-                <div className="border-t pt-6 text-center text-sm text-gray-500">
+                {/* <div className="border-t pt-6 text-center text-sm text-gray-500">
                   <p>Thank you for your business!</p>
                   <p className="mt-2">For any inquiries, please contact us at +971 4 123 4567 or email info@allaundry.ae</p>
                   <p className="mt-4 font-medium">Terms & Conditions:</p>
                   <p className="mt-1">1. Payment is due upon receipt of this invoice</p>
                   <p>2. Items not claimed within 30 days will be donated to charity</p>
-                </div>
+                </div> */}
               </div>
 
               {/* Action Buttons */}

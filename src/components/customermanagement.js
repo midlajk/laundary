@@ -259,12 +259,7 @@ const CustomerManagementScreen = () => {
                         >
                           <EyeIcon className="h-5 w-5" />
                         </button>
-                        <button
-                          className="text-gray-600 hover:text-gray-900"
-                          title="Edit"
-                        >
-                          <PencilIcon className="h-5 w-5" />
-                        </button>
+                 
                         <button 
                           onClick={() => handleDeleteCustomer(customer.id)}
                           className="text-red-600 hover:text-red-900"
@@ -419,18 +414,22 @@ const CustomerForm = ({ onSave, suggestedId }) => {
 const CustomerDetailModal = ({ customer, onClose, orders, payments }) => {
   const customerOrders = orders?.filter(order => order.customerId === customer.id) || [];
   const customerPayments = payments?.filter(payment => payment.customerId === customer.id) || [];
-  
+
   // Calculate order totals
   const orderStats = customerOrders.reduce((stats, order) => {
-    const orderPayments = customerPayments.filter(p => p.orderId === order.id);
-    const paidAmount = orderPayments.reduce((sum, p) => sum + p.amount, 0);
-    const pendingAmount = order.totalAmount - paidAmount;
-    
+   const orders = customerOrders.length;
+   const ordersum = customerOrders.reduce((sum, order) => {
+      if (order.status === 'cancelled') return sum;
+            return sum + (order.total );
+    }, 0);    
+     const paymentmade = customerPayments.reduce((sum, payment) => {
+            return sum + (payment.amount );
+    }, 0);
     return {
-      totalOrders: stats.totalOrders + 1,
-      totalAmount: stats.totalAmount + order.totalAmount,
-      totalPaid: stats.totalPaid + paidAmount,
-      totalPending: stats.totalPending + (pendingAmount > 0 ? pendingAmount : 0)
+      totalOrders: orders,
+      totalAmount: ordersum,
+      totalPaid: paymentmade,
+      totalPending: (ordersum-paymentmade)
     };
   }, { totalOrders: 0, totalAmount: 0, totalPaid: 0, totalPending: 0 });
 
@@ -499,7 +498,6 @@ const CustomerDetailModal = ({ customer, onClose, orders, payments }) => {
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -512,11 +510,11 @@ const CustomerDetailModal = ({ customer, onClose, orders, payments }) => {
                       
                       return (
                         <tr key={order.id}>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">#{order.id}</td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">#{order.orderNumber}</td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                            {new Date(order.date).toLocaleDateString()}
+                            {new Date(order.createdAt).toLocaleDateString()}
                           </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${order.totalAmount}</td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${order.total}</td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
                             <span className={`px-2 py-1 rounded-full text-xs ${
                               order.status === 'completed' ? 'bg-green-100 text-green-800' :
@@ -526,15 +524,7 @@ const CustomerDetailModal = ({ customer, onClose, orders, payments }) => {
                               {order.status}
                             </span>
                           </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                            <span className={`px-2 py-1 rounded-full text-xs ${
-                              paymentStatus === 'Paid' ? 'bg-green-100 text-green-800' :
-                              paymentStatus === 'Partial' ? 'bg-blue-100 text-blue-800' :
-                              'bg-red-100 text-red-800'
-                            }`}>
-                              {paymentStatus} (${paidAmount}/${order.totalAmount})
-                            </span>
-                          </td>
+                         
                         </tr>
                       );
                     })
