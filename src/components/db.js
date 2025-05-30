@@ -11,6 +11,7 @@ db.version(1).stores({
   payments: '++id, customerId, orderId, amount, method, date,note,paymentId,customercode,name,phoneNumber'
 
 });
+// Add to your DB schema
 
 
 export default db;

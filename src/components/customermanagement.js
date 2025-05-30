@@ -168,7 +168,7 @@ const CustomerManagementScreen = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Pending Payments</p>
-              <p className="text-2xl font-bold text-red-600">${totalPendingAmount.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-red-600">${totalPendingAmount}</p>
               <p className="text-xs text-gray-500">total outstanding</p>
             </div>
             <div className="p-3 bg-red-100 rounded-full">
@@ -243,7 +243,7 @@ const CustomerManagementScreen = () => {
                         <div className="flex items-center">
                           <CurrencyDollarIcon className="h-4 w-4 text-red-500 mr-1" />
                           <span className="text-sm font-medium text-red-600">
-                            {stats.pendingAmount.toFixed(2)}
+                            {stats.pendingAmount}
                           </span>
                         </div>
                       ) : (
@@ -476,15 +476,15 @@ const CustomerDetailModal = ({ customer, onClose, orders, payments }) => {
             </div>
             <div className="bg-gray-50 p-4 rounded-lg">
               <h4 className="text-sm font-medium text-gray-500">Total Amount</h4>
-              <p className="mt-1 text-2xl font-bold text-gray-900">${orderStats.totalAmount.toFixed(2)}</p>
+              <p className="mt-1 text-2xl font-bold text-gray-900">${orderStats.totalAmount}</p>
             </div>
             <div className="bg-gray-50 p-4 rounded-lg">
               <h4 className="text-sm font-medium text-gray-500">Total Paid</h4>
-              <p className="mt-1 text-2xl font-bold text-green-600">${orderStats.totalPaid.toFixed(2)}</p>
+              <p className="mt-1 text-2xl font-bold text-green-600">${orderStats.totalPaid}</p>
             </div>
             <div className="bg-gray-50 p-4 rounded-lg">
               <h4 className="text-sm font-medium text-gray-500">Pending Amount</h4>
-              <p className="mt-1 text-2xl font-bold text-red-600">${orderStats.totalPending.toFixed(2)}</p>
+              <p className="mt-1 text-2xl font-bold text-red-600">${orderStats.totalPending}</p>
             </div>
           </div>
           
@@ -516,7 +516,7 @@ const CustomerDetailModal = ({ customer, onClose, orders, payments }) => {
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
                             {new Date(order.date).toLocaleDateString()}
                           </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${order.totalAmount.toFixed(2)}</td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${order.totalAmount}</td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
                             <span className={`px-2 py-1 rounded-full text-xs ${
                               order.status === 'completed' ? 'bg-green-100 text-green-800' :
@@ -532,7 +532,7 @@ const CustomerDetailModal = ({ customer, onClose, orders, payments }) => {
                               paymentStatus === 'Partial' ? 'bg-blue-100 text-blue-800' :
                               'bg-red-100 text-red-800'
                             }`}>
-                              {paymentStatus} (${paidAmount.toFixed(2)}/${order.totalAmount.toFixed(2)})
+                              {paymentStatus} (${paidAmount}/${order.totalAmount})
                             </span>
                           </td>
                         </tr>
